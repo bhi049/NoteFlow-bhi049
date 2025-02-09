@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { TouchableOpacity } from "react-native";
-import { FlatList, TextInput, View } from "react-native-web";
+import { FlatList, TextInput, View, TouchableOpacity } from "react-native"; 
+import { FAB, List } from "react-native-paper"; // ✅ Import FAB and List from Paper
 
 export default function HomeScreen({ navigation }) {
     const [notes, setNotes] = useState([]);
@@ -16,7 +16,9 @@ export default function HomeScreen({ navigation }) {
         if (savedNotes) setNotes(JSON.parse(savedNotes));
     };
 
-    const searchFilter = notes.filter(note => note.text.toLowerCase().includes(search.toLowerCase()));
+    const searchFilter = notes.filter(note => 
+        note.text.toLowerCase().includes(search.toLowerCase())
+    );
 
     return (
         <View style={{ flex: 1, padding: 20 }}>
@@ -28,14 +30,18 @@ export default function HomeScreen({ navigation }) {
             />
             <FlatList
                 data={searchFilter}
-                keyExtarctor={item => item.id}
+                keyExtractor={item => item.id} 
                 renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => navigation.navigate('Note', { note: item })}>
-                    <List.item title={item.text} description={item.date} />
-                </TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate('Note', { note: item })}>
+                        <List.Item title={item.text} description={item.date} /> 
+                    </TouchableOpacity>
                 )}
             />
-            <FAB icon="plus" style={{ postition: 'absolute', bottom: 20, right: 20}} onPress={() => navigation.navigate('Note')} />
+            <FAB 
+                icon="plus" 
+                style={{ position: 'absolute', bottom: 20, right: 20 }} 
+                onPress={() => navigation.navigate('Note')} 
+            />
         </View>
     );
 }
