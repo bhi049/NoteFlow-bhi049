@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { SafeAreaView, Alert, StyleSheet } from "react-native";
+import { SafeAreaView, Alert, StyleSheet, Text, View } from "react-native";
 import { Button, TextInput, IconButton } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -32,7 +32,7 @@ export default function NoteScreen({ route, navigation }) {
 
     const deleteNote = async () => {
         if (!note) {
-            navigation.goBack(); // If the note is new and not saved, just exit
+            navigation.goBack();
             return;
         }
 
@@ -49,9 +49,10 @@ export default function NoteScreen({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <SafeAreaView style={styles.header}>
-                <IconButton icon="delete" color="red" size={26} onPress={deleteNote} />
-            </SafeAreaView>
+            <View style={styles.headerContainer}>
+                <Text style={styles.noteHeader}>{text.split("\n")[0] || "New Note"}</Text>
+                <IconButton icon="delete" color="#C0C0C0" size={26} onPress={deleteNote} />
+            </View>
 
             <TextInput
                 label="Write your note..."
@@ -73,11 +74,19 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: "#f8f9fa",
+        backgroundColor: "#FFFFFF", 
     },
-    header: {
+    headerContainer: {
         flexDirection: "row",
-        justifyContent: "flex-end",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    noteHeader: {
+        fontSize: 30, 
+        fontWeight: "bold",
+        color: "#333",
+        flex: 1,
     },
     textInput: {
         height: 200,
@@ -86,6 +95,6 @@ const styles = StyleSheet.create({
     },
     saveButton: {
         marginTop: 10,
-        backgroundColor: "#6200EE",
+        backgroundColor: "#C0C0C0",
     },
 });

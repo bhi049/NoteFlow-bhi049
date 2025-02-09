@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, FlatList, TextInput, TouchableOpacity, StyleSheet, Text } from "react-native"; 
-import { FAB, List } from "react-native-paper"; 
+import { SafeAreaView, FlatList, TextInput, TouchableOpacity, StyleSheet, Text, View } from "react-native"; 
+import { FAB } from "react-native-paper"; 
 
 export default function HomeScreen({ navigation }) {
     const [notes, setNotes] = useState([]);
@@ -10,17 +10,13 @@ export default function HomeScreen({ navigation }) {
     useEffect(() => {
         // Load notes when the screen is focused
         const unsubscribe = navigation.addListener("focus", loadNotes);
-        return unsubscribe; // ✅ Ensure cleanup
+        return unsubscribe;
     }, [navigation]);
 
     const loadNotes = async () => {
         try {
             const savedNotes = await AsyncStorage.getItem("notes");
-            if (savedNotes) {
-                setNotes(JSON.parse(savedNotes));
-            } else {
-                setNotes([]); // Set to empty if no notes exist
-            }
+            setNotes(savedNotes ? JSON.parse(savedNotes) : []);
         } catch (error) {
             console.error("Error loading notes:", error);
         }
@@ -32,7 +28,9 @@ export default function HomeScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>My Notes</Text>
+            <View style={styles.headerContainer}>
+                <Text style={styles.mainHeader}>My Notes</Text>
+            </View>
 
             <TextInput
                 placeholder="Search Notes..."
@@ -49,7 +47,14 @@ export default function HomeScreen({ navigation }) {
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <TouchableOpacity onPress={() => navigation.navigate("Note", { note: item })}>
-                            <List.Item title={item.text} description={item.date} />
+                            <View style={styles.noteContainer}>
+                                <Text style={styles.noteHeader}>
+                                    {item.text.split("\n")[0]} {/* First line as header */}
+                                </Text>
+                                <Text style={styles.notePreview}>
+                                    {item.text.substring(0, 50)}... {/* Show first 50 characters */}
+                                </Text>
+                            </View>
                         </TouchableOpacity>
                     )}
                 />
@@ -61,7 +66,6 @@ export default function HomeScreen({ navigation }) {
                 onPress={() => navigation.navigate("Note")} 
             />
         </SafeAreaView>
-
     );
 }
 
@@ -69,12 +73,15 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: "#f8f9fa",
+        backgroundColor: "#FFFFFF", 
     },
-    title: {
-        fontSize: 22,
+    headerContainer: {
+        marginBottom: 20,
+    },
+    mainHeader: {
+        fontSize: 36, 
         fontWeight: "bold",
-        marginBottom: 10,
+        color: "#333",
     },
     searchBar: {
         padding: 10,
@@ -89,8 +96,30 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#777",
     },
+    noteContainer: {
+        padding: 15,
+        backgroundColor: "#f5f5f5",
+        marginBottom: 10,
+        borderRadius: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    noteHeader: {
+        fontSize: 20, 
+        fontWeight: "bold",
+        color: "#444",
+        marginBottom: 5,
+    },
+    notePreview: {
+        fontSize: 14,
+        color: "#777",
+    },
     fab: {
         position: "absolute",
+        backgroundColor: "#C0C0C0",
         bottom: 20,
         right: 20,
     },
