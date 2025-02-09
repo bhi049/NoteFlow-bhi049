@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, FlatList, TextInput, TouchableOpacity, StyleSheet, Text, View } from "react-native"; 
+import { SafeAreaView, FlatList, TextInput, TouchableOpacity, StyleSheet, Text, View, Image } from "react-native"; 
 import { FAB } from "react-native-paper"; 
+import logo from "../assets/NoteFlow-logo-l.png";
 
 export default function HomeScreen({ navigation }) {
     const [notes, setNotes] = useState([]);
@@ -29,7 +30,7 @@ export default function HomeScreen({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.headerContainer}>
-                <Text style={styles.mainHeader}>My Notes</Text>
+                <Image source={logo} style={styles.logo}/>
             </View>
 
             <TextInput
@@ -76,7 +77,15 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF", 
     },
     headerContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
         marginBottom: 20,
+    },
+    logo: {
+        width: 100, 
+        height: 50,
+        marginRight: 10,
     },
     mainHeader: {
         fontSize: 36, 
