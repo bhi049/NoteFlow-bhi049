@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { FlatList, TextInput, View, TouchableOpacity, StyleSheet, Text } from "react-native"; 
+import { SafeAreaView, FlatList, TextInput, TouchableOpacity, StyleSheet, Text } from "react-native"; 
 import { FAB, List } from "react-native-paper"; 
 
 export default function HomeScreen({ navigation }) {
@@ -31,7 +31,7 @@ export default function HomeScreen({ navigation }) {
     );
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.title}>My Notes</Text>
 
             <TextInput
@@ -60,7 +60,8 @@ export default function HomeScreen({ navigation }) {
                 style={styles.fab} 
                 onPress={() => navigation.navigate("Note")} 
             />
-        </View>
+        </SafeAreaView>
+
     );
 }
 

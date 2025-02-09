@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Alert, StyleSheet } from "react-native";
+import { SafeAreaView, Alert, StyleSheet } from "react-native";
 import { Button, TextInput, IconButton } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -48,10 +48,10 @@ export default function NoteScreen({ route, navigation }) {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={styles.container}>
+            <SafeAreaView style={styles.header}>
                 <IconButton icon="delete" color="red" size={26} onPress={deleteNote} />
-            </View>
+            </SafeAreaView>
 
             <TextInput
                 label="Write your note..."
@@ -65,7 +65,7 @@ export default function NoteScreen({ route, navigation }) {
             <Button mode="contained" onPress={saveNote} style={styles.saveButton}>
                 Save Note
             </Button>
-        </View>
+        </SafeAreaView>
     );
 }
 
