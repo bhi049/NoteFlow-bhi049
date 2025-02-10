@@ -9,10 +9,13 @@ export default function HomeScreen({ navigation }) {
     const [search, setSearch] = useState('');
 
     useEffect(() => {
-        // Load notes when the screen is focused
-        const unsubscribe = navigation.addListener("focus", loadNotes);
+        const unsubscribe = navigation.addListener("focus", () => {
+            console.log("Loading notes...");
+            loadNotes();
+        });
         return unsubscribe;
     }, [navigation]);
+    
 
     const loadNotes = async () => {
         try {
@@ -30,6 +33,11 @@ export default function HomeScreen({ navigation }) {
             setNotes([]); // Fallback to an empty array in case of an error
         }
     };
+
+    // Function to strip HTML tags from note text
+    const stripHtml = (html) => {
+        return html.replace(/<[^>]*>?/gm, '') // Removes all HTML tags
+    }
 
     const searchFilter = Array.isArray(notes) ? notes.filter((note) => 
         note.text.toLowerCase().includes(search.toLowerCase())
@@ -59,10 +67,10 @@ export default function HomeScreen({ navigation }) {
                         <TouchableOpacity onPress={() => navigation.navigate("Note", { note: item })}>
                             <View style={styles.noteContainer}>
                                 <Text style={styles.noteHeader}>
-                                    {item.text.split("\n")[0]} {/* First line as header */}
+                                    {stripHtml(item.text).split("\n")[0] || "Untitled"} {/* First line as header */}
                                 </Text>
                                 <Text style={styles.notePreview}>
-                                    {item.text.substring(0, 50)}... {/* Show first 50 characters */}
+                                    {stripHtml(item.text).substring(0, 50)}... {/* Show first 50 characters */}
                                 </Text>
                             </View>
                         </TouchableOpacity>

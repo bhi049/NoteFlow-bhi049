@@ -20,10 +20,12 @@
     "react-native": "0.76.7",
     "react-native-gesture-handler": "^2.23.0",
     "react-native-paper": "^5.13.1",
+    "react-native-pell-rich-editor": "^1.9.0",
     "react-native-reanimated": "^3.16.7",
     "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.6.0",
-    "react-native-web": "~0.19.13"
+    "react-native-web": "~0.19.13",
+    "react-native-webview": "^13.13.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
