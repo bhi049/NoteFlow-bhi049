@@ -12,23 +12,36 @@ export default function NoteScreen({ route, navigation }) {
     }, [note]);
 
     const saveNote = async () => {
-        const savedNotes = JSON.parse(await AsyncStorage.getItem("notes")) || [];
-
-        if (note) {
-            // Update existing note
-            const updatedNotes = savedNotes.map(n => (n.id === note.id ? { ...n, text } : n));
-            await AsyncStorage.setItem("notes", JSON.stringify(updatedNotes));
-        } else {
-            // Add new note
-            const newNote = {
-                id: Date.now().toString(),
-                text,
-                date: new Date().toLocaleString(),
-            };
-            await AsyncStorage.setItem("notes", JSON.stringify([...savedNotes, newNote]));
+        try {
+            const savedNotes = JSON.parse(await AsyncStorage.getItem("notes")) || [];
+    
+            if (!Array.isArray(savedNotes)) {
+                console.error("Corrupt data found in AsyncStorage. Resetting notes.");
+                await AsyncStorage.setItem("notes", JSON.stringify([]));
+                return;
+            }
+    
+            if (note) {
+                // Update existing note
+                const updatedNotes = savedNotes.map(n => (n.id === note.id ? { ...n, text } : n));
+                await AsyncStorage.setItem("notes", JSON.stringify(updatedNotes));
+            } else {
+                // Add new note
+                const newNote = {
+                    id: Date.now().toString(),
+                    text,
+                    date: new Date().toLocaleString(),
+                };
+                await AsyncStorage.setItem("notes", JSON.stringify([...savedNotes, newNote]));
+            }
+    
+            console.log("Note saved successfully!");
+            navigation.goBack();
+        } catch (error) {
+            console.error("Error saving note:", error);
         }
-        navigation.goBack();
     };
+    
 
     const deleteNote = async () => {
         if (!note) {

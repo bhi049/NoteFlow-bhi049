@@ -17,15 +17,24 @@ export default function HomeScreen({ navigation }) {
     const loadNotes = async () => {
         try {
             const savedNotes = await AsyncStorage.getItem("notes");
-            setNotes(savedNotes ? JSON.parse(savedNotes) : []);
+            const parsedNotes = savedNotes ? JSON.parse(savedNotes) : [];
+            
+            // Ensure parsedNotes is always an array
+            if (!Array.isArray(parsedNotes)) {
+                setNotes([]);
+            } else {
+                setNotes(parsedNotes);
+            }
         } catch (error) {
             console.error("Error loading notes:", error);
+            setNotes([]); // Fallback to an empty array in case of an error
         }
     };
 
-    const searchFilter = notes.filter((note) => 
+    const searchFilter = Array.isArray(notes) ? notes.filter((note) => 
         note.text.toLowerCase().includes(search.toLowerCase())
-    );
+    ) : [];
+    
 
     return (
         <SafeAreaView style={styles.container}>
