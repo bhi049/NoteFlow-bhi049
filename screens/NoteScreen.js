@@ -4,8 +4,11 @@ import { Button, IconButton } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RichEditor, RichToolbar } from "react-native-pell-rich-editor";
 
-
 export default function NoteScreen({ route, navigation }) {
+    const stripHtml = (html) => {
+        return html.replace(/<[^>]*>?/gm, '');
+    };
+
     const [text, setText] = useState("");
     const note = route.params?.note;
     let editorRef = useRef(); // Ref for the RichEditor
@@ -15,7 +18,6 @@ export default function NoteScreen({ route, navigation }) {
     }, [note]);
 
     const saveNote = async () => {
-
         try {
             const savedNotes = JSON.parse(await AsyncStorage.getItem("notes")) || [];
 
@@ -27,14 +29,23 @@ export default function NoteScreen({ route, navigation }) {
 
             if (note) {
                 // Update existing note
-                const updatedNotes = savedNotes.map(n => (n.id === note.id ? { ...n, text } : n));
+                const updatedNotes = savedNotes.map(n => (n.id === note.id ? { 
+                    ...n, 
+                    text,
+                    updatedAt: new Date().toISOString(),
+                    folderId: note.folderId // Preserve folder ID
+                } : n));
                 await AsyncStorage.setItem("notes", JSON.stringify(updatedNotes));
             } else {
                 // Add new note
                 const newNote = {
                     id: Date.now().toString(),
                     text,
-                    date: new Date().toLocaleString(),
+                    title: stripHtml(text).split("\n")[0] || "Untitled",
+                    category: 'personal', // default category
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    folderId: null // New notes start without a folder
                 };
                 await AsyncStorage.setItem("notes", JSON.stringify([...savedNotes, newNote]));
             }
@@ -127,12 +138,12 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: "bold",
         color: "#333",
-        flex: 1, // Allow the title to expand
+        flex: 1, 
         textAlign: "center",
     },
     saveButtonText: {
         fontSize: 16,
-        color: "#007AFF", // iOS-style save button color
+        color: "#007AFF", 
     },
     editor: {
         flex: 1,
