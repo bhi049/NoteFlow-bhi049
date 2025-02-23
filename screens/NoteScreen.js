@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { SafeAreaView, Alert, StyleSheet, Text, View } from "react-native";
-import { Button, IconButton } from "react-native-paper";
+import { SafeAreaView, Alert, StyleSheet, Text, View, Platform, ScrollView, TouchableOpacity } from "react-native";
+import { Button, IconButton, Menu } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { RichEditor, RichToolbar } from "react-native-pell-rich-editor";
+import { RichEditor, RichToolbar, actions } from "react-native-pell-rich-editor";
+import * as ImagePicker from 'expo-image-picker';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function NoteScreen({ route, navigation }) {
     const stripHtml = (html) => {
@@ -10,12 +12,75 @@ export default function NoteScreen({ route, navigation }) {
     };
 
     const [text, setText] = useState("");
+    const [formatMenuVisible, setFormatMenuVisible] = useState(false);
+    const [imageMenuVisible, setImageMenuVisible] = useState(false);
     const note = route.params?.note;
-    let editorRef = useRef(); // Ref for the RichEditor
+    const editorRef = useRef();
 
     useEffect(() => {
         if (note) setText(note.text);
+        requestMediaPermissions();
     }, [note]);
+
+    const requestMediaPermissions = async () => {
+        if (Platform.OS !== 'web') {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Sorry, we need camera roll permissions to upload images!');
+            }
+        }
+    };
+
+    // Custom actions for the editor
+    const customActions = [
+        {
+            name: 'checkList',
+            iconName: 'checkbox-marked-outline',
+            action: () => {
+                editorRef.current?.insertHTML(`
+                    <div style="display: flex; align-items: center; margin: 8px 0;">
+                        <input type="checkbox" style="margin-right: 8px;">
+                        <span>New checklist item</span>
+                    </div>
+                `);
+            }
+        },
+        {
+            name: 'bulletList',
+            iconName: 'format-list-bulleted',
+            action: () => editorRef.current?.sendAction('insertBulletsList', 'bullet')
+        },
+        {
+            name: 'numberList',
+            iconName: 'format-list-numbered',
+            action: () => editorRef.current?.sendAction('insertOrderedList', 'ordered')
+        }
+    ];
+
+    const pickImage = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.8,
+                base64: true,
+            });
+
+            if (!result.canceled && result.assets && result.assets[0]) {
+                const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+                editorRef.current?.insertImage(
+                    base64Image,
+                    'image',
+                    150, // width
+                    0, // height (0 maintains aspect ratio)
+                    'Image'
+                );
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+            Alert.alert('Error', 'Failed to add image. Please try again.');
+        }
+    };
 
     const saveNote = async () => {
         try {
@@ -57,7 +122,6 @@ export default function NoteScreen({ route, navigation }) {
         }
     };
 
-
     const deleteNote = async () => {
         if (!note) {
             navigation.goBack();
@@ -75,6 +139,24 @@ export default function NoteScreen({ route, navigation }) {
                 }
             },
         ]);
+    };
+
+    // Update the RichToolbar component and add custom handlers
+    const handleCheckList = () => {
+        editorRef.current?.insertHTML(`
+            <label style="display: flex; align-items: center; margin: 8px 0;">
+                <input type="checkbox" style="margin-right: 8px; width: 16px; height: 16px;">
+                <span style="flex: 1;">New checklist item</span>
+            </label>
+        `);
+    };
+
+    const handleBulletList = () => {
+        editorRef.current?.sendAction('insertUnorderedList');
+    };
+
+    const handleNumberList = () => {
+        editorRef.current?.sendAction('insertOrderedList');
     };
 
     return (
@@ -105,19 +187,98 @@ export default function NoteScreen({ route, navigation }) {
             {/* Rich Text Toolbar */}
             <RichToolbar
                 editor={editorRef}
-                actions={["bold", "italic", "underline", "unorderedList", "orderedList", "link", "image"]}
-                selectedIconTint="#C0C0C0"
+                actions={[
+                    actions.setBold,
+                    actions.setItalic,
+                    actions.setUnderline,
+                    actions.heading1,
+                    actions.heading2,
+                    actions.insertBulletsList,
+                    actions.insertOrderedList,
+                    'checkList',
+                    actions.insertImage,
+                ]}
+                iconMap={{
+                    [actions.setBold]: () => (
+                        <MaterialCommunityIcons name="format-bold" size={20} color="#666" />
+                    ),
+                    [actions.setItalic]: () => (
+                        <MaterialCommunityIcons name="format-italic" size={20} color="#666" />
+                    ),
+                    [actions.setUnderline]: () => (
+                        <MaterialCommunityIcons name="format-underline" size={20} color="#666" />
+                    ),
+                    [actions.heading1]: () => (
+                        <MaterialCommunityIcons name="format-header-1" size={20} color="#666" />
+                    ),
+                    [actions.heading2]: () => (
+                        <MaterialCommunityIcons name="format-header-2" size={20} color="#666" />
+                    ),
+                    [actions.insertBulletsList]: () => (
+                        <MaterialCommunityIcons name="format-list-bulleted" size={20} color="#666" />
+                    ),
+                    [actions.insertOrderedList]: () => (
+                        <MaterialCommunityIcons name="format-list-numbered" size={20} color="#666" />
+                    ),
+                    checkList: () => (
+                        <MaterialCommunityIcons name="checkbox-marked-outline" size={20} color="#666" />
+                    ),
+                    insertImage: () => (
+                        <MaterialCommunityIcons name="image-plus" size={20} color="#666" />
+                    ),
+                }}
+                onPressAddImage={pickImage}
+                onInsertLink={() => {
+                    // Handle link insertion if needed
+                }}
                 style={styles.toolbar}
+                selectedIconTint="#007AFF"
+                disabledIconTint="#BDBDBD"
+                iconSize={20}
+                onCheckList={handleCheckList}
+                onInsertBulletsList={handleBulletList}
+                onInsertOrderedList={handleNumberList}
             />
 
             {/* Rich Editor */}
-            <RichEditor
-                ref={editorRef}
-                initialContentHTML={text}
-                onChange={(html) => setText(html)}
-                placeholder="Write your note..."
-                style={styles.editor}
-            />
+            <ScrollView style={styles.editorContainer}>
+                <RichEditor
+                    ref={editorRef}
+                    initialContentHTML={text}
+                    onChange={setText}
+                    placeholder="Start writing..."
+                    style={styles.editor}
+                    initialHeight={400}
+                    useContainer={false}
+                    editorInitializedCallback={() => {
+                        console.log('Editor is ready');
+                    }}
+                    editorStyle={{
+                        backgroundColor: '#FFFFFF',
+                        contentCSSText: `
+                            font-family: -apple-system, system-ui;
+                            font-size: 16px;
+                            padding: 16px;
+                            min-height: 200px;
+                        `,
+                    }}
+                    pasteAsPlainText={true}
+                    placeholder="Start writing..."
+                    initialFocus={false}
+                    disabled={false}
+                    scrollEnabled={true}
+                    containerStyle={styles.editorContainer}
+                    onPaste={(data) => {
+                        console.log('Pasted:', data);
+                    }}
+                    onKeyUp={() => {
+                        // Handle key up events if needed
+                    }}
+                    onInput={(data) => {
+                        // Handle input events if needed
+                    }}
+                />
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -145,17 +306,24 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#007AFF", 
     },
+    editorContainer: {
+        flex: 1,
+        minHeight: 400,
+        backgroundColor: '#FFFFFF',
+    },
     editor: {
         flex: 1,
-        borderWidth: 1,
-        borderColor: "#ccc",
+        backgroundColor: '#FFFFFF',
         borderRadius: 8,
-        padding: 10,
+        padding: 12,
         minHeight: 200,
     },
     toolbar: {
-        backgroundColor: "#f5f5f5",
+        backgroundColor: '#FFFFFF',
         borderTopWidth: 1,
-        borderTopColor: "#ccc",
+        borderBottomWidth: 1,
+        borderColor: '#E5E7EB',
+        marginBottom: 8,
+        height: 48,
     },
 });

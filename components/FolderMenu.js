@@ -131,7 +131,7 @@ export default function FolderMenu({
                     <Text style={styles.headerText}>Folders</Text>
                     <View style={styles.headerButtons}>
                         <IconButton 
-                            icon={folderSort === 'name' ? 'sort-alphabetical' : 'sort-calendar'} 
+                            icon={folderSort === 'name' ? 'sort-alphabetical-ascending' : 'sort-calendar-descending'} 
                             size={24} 
                             onPress={() => onChangeFolderSort(folderSort === 'name' ? 'date' : 'name')}
                         />
